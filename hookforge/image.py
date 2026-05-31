@@ -71,5 +71,11 @@ def make_card(
     out = Path(out_path)
     if out.parent and not out.parent.exists():
         out.parent.mkdir(parents=True, exist_ok=True)
-    img.save(out)
+    # Instagram's content-publishing API only accepts JPEG, so save JPEG with a
+    # sensible quality when the caller asks for .jpg/.jpeg (RGB mode is already
+    # JPEG-compatible). Other extensions save in their native format.
+    if out.suffix.lower() in (".jpg", ".jpeg"):
+        img.save(out, "JPEG", quality=90, optimize=True)
+    else:
+        img.save(out)
     return str(out)
