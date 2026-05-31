@@ -1,0 +1,6 @@
+# Full feature set. For a lighter install, use the extras in pyproject.toml, e.g.
+#   pip install -e ".[generate,x]"
+anthropic>=0.40
+tweepy>=4.14
+requests>=2.31
+Pillow>=10.0

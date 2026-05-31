@@ -1,0 +1,22 @@
+# Secrets — never commit these
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+.venv/
+venv/
+
+# Generated artifacts
+*.png
+!docs/*.png
+
+# OS
+.DS_Store

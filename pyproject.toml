@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hookforge"
+version = "0.1.0"
+description = "Generate scroll-stopping social posts, stress-test them against cynical reader personas, and publish to X + Instagram. Bring your own API keys."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Sarah McLellan" }]
+keywords = ["marketing", "ai", "social-media", "twitter", "instagram", "llm", "claude"]
+dependencies = []
+
+[project.optional-dependencies]
+# Install only what you need. Core logic + tests run with no extras.
+generate = ["anthropic>=0.40"]
+x = ["tweepy>=4.14"]
+instagram = ["requests>=2.31"]
+image = ["Pillow>=10.0"]
+all = ["anthropic>=0.40", "tweepy>=4.14", "requests>=2.31", "Pillow>=10.0"]
+dev = ["pytest>=7.0"]
+
+[project.scripts]
+hookforge = "hookforge.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["hookforge*"]
