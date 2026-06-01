@@ -1,11 +1,28 @@
 """Generate platform-native social posts from a product/topic brief."""
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import dataclass
 from typing import Any
 
 from .config import Config
 from .llm import complete
+
+
+def strip_decor(s: str) -> str:
+    """Remove emojis and replace em/en dashes with a hyphen (house style)."""
+    out = []
+    for c in s:
+        if c in "—–":
+            out.append("-")
+            continue
+        o = ord(c)
+        if c == "️" or o >= 0x1F000 or (
+            o >= 0x2190 and unicodedata.category(c) in ("So", "Sk")
+        ):
+            continue
+        out.append(c)
+    return "".join(out)
 
 # Per-platform constraints and voice guidance. Keep these declarative so the
 # prompt stays auditable and easy to extend with new platforms.
@@ -42,8 +59,9 @@ PLATFORMS: dict[str, dict] = {
 SYSTEM = (
     "You are a senior growth marketer who writes native, scroll-stopping social "
     "copy. You never sound like generic AI corporate fluff. You write with "
-    "specificity, personality, and a clear point of view. Return ONLY the post "
-    "text, with no preamble, quotes, or explanation."
+    "specificity, personality, and a clear point of view. Never use emojis or em "
+    "dashes; use a regular hyphen instead. Return ONLY the post text, with no "
+    "preamble, quotes, or explanation."
 )
 
 
@@ -116,4 +134,4 @@ def generate_post(
         max_tokens=1024,
         temperature=1.0,
     )
-    return Post(platform=platform, text=text)
+    return Post(platform=platform, text=strip_decor(text))

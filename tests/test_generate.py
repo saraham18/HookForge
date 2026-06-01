@@ -1,7 +1,17 @@
 import pytest
 
-from hookforge.generate import build_prompt, generate_post, supported_platforms
+from hookforge.generate import build_prompt, generate_post, strip_decor, supported_platforms
 from tests.conftest import FakeAnthropic
+
+
+def test_strip_decor_removes_emojis_and_em_dashes():
+    assert strip_decor("we shipped \U0001f680 - it works — fast") == "we shipped  - it works - fast"
+
+
+def test_generate_post_sanitizes_output(config):
+    fake = FakeAnthropic("scroll-stopping \U0001f525 launch — now")
+    post = generate_post(config, "a tool", "x", client=fake)
+    assert "—" not in post.text and "\U0001f525" not in post.text
 
 
 def test_supported_platforms():

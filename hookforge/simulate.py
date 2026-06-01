@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .config import Config
+from .generate import strip_decor
 from .llm import complete
 
 PERSONAS: dict[str, str] = {
@@ -173,9 +174,9 @@ def _coerce_reaction(persona_key: str, data: dict) -> PersonaReaction:
         score = 0
     return PersonaReaction(
         persona=persona_key,
-        monologue=str(data.get("monologue", "")).strip(),
+        monologue=strip_decor(str(data.get("monologue", "")).strip()),
         scroll_stop_probability=max(0, min(100, score)),
-        biggest_flaw=str(data.get("biggest_flaw", "")).strip(),
+        biggest_flaw=strip_decor(str(data.get("biggest_flaw", "")).strip()),
     )
 
 
