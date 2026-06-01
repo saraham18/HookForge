@@ -73,7 +73,7 @@ hookforge generate --product "..." --platform x --tone "dry and confident"
 
 # Target a specific audience and follow a brand guide (a file path or inline text).
 # With --audience, the simulator builds personas matching that demographic instead
-# of the default trio. --brand accepts a brand-guide.json produced by BrandForge.
+# of the default trio. --brand accepts a brand-guide.json produced by BrandGuide.
 hookforge run --product "..." --audience "fitness founders, 30-45" --brand brand-guide.json
 
 # Make a branded 1080x1080 image card (Instagram needs an image)
