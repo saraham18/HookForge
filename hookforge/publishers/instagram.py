@@ -9,7 +9,7 @@ Requirements (set up once on your side):
   * A Meta app with the instagram_basic + instagram_content_publish permissions.
   * A long-lived access token (IG_ACCESS_TOKEN) and the IG user id (IG_USER_ID).
 
-The image MUST be reachable at a public https URL — Instagram fetches it
+The image MUST be reachable at a public https URL - Instagram fetches it
 server-side. A convenient trick: commit the image to a public GitHub repo and
 use its raw.githubusercontent.com URL. ``requests`` is imported lazily.
 """

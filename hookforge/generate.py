@@ -61,16 +61,35 @@ def supported_platforms() -> list[str]:
     return list(PLATFORMS)
 
 
-def build_prompt(product: str, platform: str, *, tone: str | None = None) -> str:
+def build_prompt(
+    product: str,
+    platform: str,
+    *,
+    tone: str | None = None,
+    audience: str | None = None,
+    brand: str | None = None,
+) -> str:
     if platform not in PLATFORMS:
         raise ValueError(
             f"Unknown platform '{platform}'. Supported: {', '.join(PLATFORMS)}"
         )
     spec = PLATFORMS[platform]
     tone_line = f"\nDesired tone: {tone}." if tone else ""
+    audience_block = (
+        f"\nTARGET AUDIENCE (write directly for these people):\n{audience.strip()}\n"
+        if audience
+        else ""
+    )
+    brand_block = (
+        f"\nBRAND GUIDE (follow strictly - voice, vocabulary, do's and don'ts):\n"
+        f"{brand.strip()}\n"
+        if brand
+        else ""
+    )
     return (
         f"Write a {spec['name']} post promoting the following.\n\n"
-        f"BRIEF:\n{product.strip()}\n{tone_line}\n\n"
+        f"BRIEF:\n{product.strip()}\n{tone_line}\n"
+        f"{audience_block}{brand_block}\n"
         f"FORMAT REQUIREMENTS:\n{spec['guidance']}\n"
         f"Hard character limit: {spec['limit']}."
     )
@@ -82,9 +101,13 @@ def generate_post(
     platform: str,
     *,
     tone: str | None = None,
+    audience: str | None = None,
+    brand: str | None = None,
     client: Any | None = None,
 ) -> Post:
-    prompt = build_prompt(product, platform, tone=tone)
+    prompt = build_prompt(
+        product, platform, tone=tone, audience=audience, brand=brand
+    )
     text = complete(
         config,
         SYSTEM,

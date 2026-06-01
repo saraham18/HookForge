@@ -79,10 +79,10 @@ class SimulationReport:
     def verdict(self) -> str:
         avg = self.average_score
         if avg >= 65:
-            return "STRONG — likely to stop the scroll"
+            return "STRONG - likely to stop the scroll"
         if avg >= 45:
-            return "OKAY — workable but the hook can be sharper"
-        return "WEAK — rewrite the hook before publishing"
+            return "OKAY - workable but the hook can be sharper"
+        return "WEAK - rewrite the hook before publishing"
 
 
 def _parse_json_object(raw: str) -> dict:
@@ -92,6 +92,78 @@ def _parse_json_object(raw: str) -> dict:
     if start == -1 or end == -1 or end < start:
         raise ValueError(f"No JSON object found in response: {raw!r}")
     return json.loads(raw[start : end + 1])
+
+
+def _parse_json_array(raw: str) -> list:
+    """Extract the first JSON array from a model response, tolerantly."""
+    start = raw.find("[")
+    end = raw.rfind("]")
+    if start == -1 or end == -1 or end < start:
+        raise ValueError(f"No JSON array found in response: {raw!r}")
+    return json.loads(raw[start : end + 1])
+
+
+_PERSONA_GEN_SYSTEM = (
+    "You build realistic audience personas for testing marketing copy. You make "
+    "them specific and true to life, not flattering caricatures - real people are "
+    "busy, distracted, and hard to impress."
+)
+
+_PERSONA_GEN_INSTRUCTIONS = (
+    "Target audience / demographic:\n{audience}\n"
+    "{brand_block}\n"
+    "Create {count} DISTINCT personas representing real, specific people in this "
+    "audience as they scroll a fast social feed. Vary their age, role, mood, and "
+    "what makes them stop vs. skip. Keep them honest and a little hard to impress.\n"
+    "Return ONLY a JSON array of {count} objects, each with EXACTLY:\n"
+    '  "key": a short snake_case identifier,\n'
+    '  "description": 1-2 sentences on who they are and exactly what they reward '
+    "or punish in a post.\n"
+    "Output only the JSON array."
+)
+
+
+def generate_personas(
+    config: Config,
+    audience: str,
+    *,
+    count: int = 3,
+    brand: str | None = None,
+    client: Any | None = None,
+) -> dict[str, str]:
+    """Generate `count` reader personas tailored to a target demographic.
+
+    The returned mapping plugs straight into ``simulate(..., personas=...)``.
+    """
+    brand_block = (
+        f"\nThe brand they'd be hearing from has this guide:\n{brand.strip()}\n"
+        if brand
+        else ""
+    )
+    prompt = _PERSONA_GEN_INSTRUCTIONS.format(
+        audience=audience.strip(), brand_block=brand_block, count=count
+    )
+    raw = complete(
+        config,
+        _PERSONA_GEN_SYSTEM,
+        prompt,
+        client=client,
+        max_tokens=800,
+        temperature=0.9,
+    )
+    personas: dict[str, str] = {}
+    for i, item in enumerate(_parse_json_array(raw)):
+        if not isinstance(item, dict):
+            continue
+        key = str(item.get("key") or f"persona_{i + 1}").strip().replace(" ", "_")
+        if key in personas:
+            key = f"{key}_{i + 1}"
+        desc = str(item.get("description", "")).strip()
+        if desc:
+            personas[key] = desc
+    if not personas:
+        raise ValueError(f"Could not parse any personas from: {raw!r}")
+    return personas
 
 
 def _coerce_reaction(persona_key: str, data: dict) -> PersonaReaction:

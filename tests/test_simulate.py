@@ -5,6 +5,7 @@ import pytest
 from hookforge.simulate import (
     PERSONAS,
     _parse_json_object,
+    generate_personas,
     simulate,
 )
 from tests.conftest import FakeAnthropic
@@ -46,3 +47,20 @@ def test_verdict_weak_when_low(config):
     )
     report = simulate(config, "draft", client=FakeAnthropic(payload))
     assert "WEAK" in report.verdict
+
+
+def test_generate_personas_for_audience(config):
+    payload = json.dumps([
+        {"key": "busy_mom", "description": "A time-pressed parent who skips fluff."},
+        {"key": "busy_mom", "description": "Duplicate key gets de-collided."},
+        {"description": "No key provided, gets an auto key."},
+    ])
+    personas = generate_personas(config, "fitness parents 30-45", client=FakeAnthropic(payload))
+    assert len(personas) == 3                      # duplicate key kept, not dropped
+    assert "busy_mom" in personas
+    # personas plug straight into simulate()
+    score_payload = json.dumps(
+        {"monologue": "x", "scroll_stop_probability": 50, "biggest_flaw": ""}
+    )
+    report = simulate(config, "draft", personas=personas, client=FakeAnthropic(score_payload))
+    assert len(report.reactions) == 3

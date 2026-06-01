@@ -1,4 +1,4 @@
-"""Shared test fakes — no network, no API keys, no SDKs required."""
+"""Shared test fakes - no network, no API keys, no SDKs required."""
 import types
 
 import pytest
